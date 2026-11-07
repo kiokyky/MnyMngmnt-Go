@@ -1,4 +1,4 @@
-package middleware
+package unit_test
 
 import (
 	"net/http"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/kiokyky/MnyMngmnt-Go/internal/middleware"
 )
 
 func TestAuthMiddleware(t *testing.T) {
@@ -15,9 +16,9 @@ func TestAuthMiddleware(t *testing.T) {
 	expectedUserID := uuid.New()
 
 	r := gin.New()
-	r.Use(AuthMiddleware(secret))
+	r.Use(middleware.AuthMiddleware(secret))
 	r.GET("/protected", func(c *gin.Context) {
-		uid, ok := GetUserID(c)
+		uid, ok := middleware.GetUserID(c)
 		if !ok {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "missing user id in context"})
 			return
@@ -36,7 +37,7 @@ func TestAuthMiddleware(t *testing.T) {
 	})
 
 	t.Run("Rejects invalid token signed with wrong secret", func(t *testing.T) {
-		badToken, _ := GenerateToken(expectedUserID, "user@example.com", "wrong-secret", 24)
+		badToken, _ := middleware.GenerateToken(expectedUserID, "user@example.com", "wrong-secret", 24)
 		req := httptest.NewRequest(http.MethodGet, "/protected", nil)
 		req.Header.Set("Authorization", "Bearer "+badToken)
 		w := httptest.NewRecorder()
@@ -48,7 +49,7 @@ func TestAuthMiddleware(t *testing.T) {
 	})
 
 	t.Run("Allows valid Bearer token and injects user_id", func(t *testing.T) {
-		validToken, err := GenerateToken(expectedUserID, "user@example.com", secret, 24)
+		validToken, err := middleware.GenerateToken(expectedUserID, "user@example.com", secret, 24)
 		if err != nil {
 			t.Fatalf("failed to generate token: %v", err)
 		}
@@ -63,4 +64,3 @@ func TestAuthMiddleware(t *testing.T) {
 		}
 	})
 }
-

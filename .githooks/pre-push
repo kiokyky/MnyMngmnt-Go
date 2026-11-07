@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+
+echo "🔍 [pre-push] Menjalankan seluruh rangkaian test di folder tests/ (Unit + Integration) sebelum push..."
+go vet ./...
+go test -count=1 ./tests/...
+echo "✅ [pre-push] Seluruh test lulus! Melanjutkan push ke GitHub..."

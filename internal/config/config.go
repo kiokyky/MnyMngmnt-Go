@@ -26,6 +26,7 @@ type Config struct {
 
 func LoadConfig() *Config {
 	_ = godotenv.Load()
+	_ = godotenv.Load("../../.env")
 
 	expiryHours := 72
 	if val := os.Getenv("JWT_EXPIRY_HOURS"); val != "" {

@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+
+echo "🔍 [pre-commit] Menjalankan go vet & unit test (tests/unit)..."
+go vet ./...
+go test ./tests/unit/...
+echo "✅ [pre-commit] Pemeriksaan kode & unit test lulus!"

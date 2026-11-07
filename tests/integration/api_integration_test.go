@@ -1,4 +1,4 @@
-package handler
+package integration_test
 
 import (
 	"bytes"
@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kiokyky/MnyMngmnt-Go/internal/config"
 	"github.com/kiokyky/MnyMngmnt-Go/internal/dto"
+	"github.com/kiokyky/MnyMngmnt-Go/internal/handler"
 	"github.com/kiokyky/MnyMngmnt-Go/internal/models"
 	"github.com/shopspring/decimal"
 )
@@ -26,7 +27,7 @@ func TestFullWorkflowIntegration(t *testing.T) {
 		t.Skipf("Skipping DB integration test (PostgreSQL not reachable in current environment): %v", err)
 	}
 
-	router := SetupRouter(db, cfg)
+	router := handler.SetupRouter(db, cfg)
 
 	// Gunakan email unik per test run & hapus bersih semua data user setelah test selesai
 	testEmail := fmt.Sprintf("test_%d@example.com", time.Now().UnixNano())
@@ -262,4 +263,3 @@ func performRequest(r http.Handler, method, path, token string, body interface{}
 	r.ServeHTTP(w, req)
 	return w
 }
-

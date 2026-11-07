@@ -1,9 +1,10 @@
-package service
+package unit_test
 
 import (
 	"testing"
 
 	"github.com/kiokyky/MnyMngmnt-Go/internal/models"
+	"github.com/kiokyky/MnyMngmnt-Go/internal/service"
 	"github.com/shopspring/decimal"
 )
 
@@ -25,7 +26,7 @@ func TestCalculateMarginView_MonthlyBluForexScenario(t *testing.T) {
 
 	// Cek margin saat kurs Blu naik ke Rp 16.200 (Untung / Profit)
 	currentBluRate := decimal.NewFromInt(16200)
-	view := CalculateMarginView(holding, &currentBluRate)
+	view := service.CalculateMarginView(holding, &currentBluRate)
 
 	expectedMarketValue := decimal.NewFromInt(3240000) // 200 * 16.200
 	expectedUnrealizedPnL := decimal.NewFromInt(90000) // 3.240.000 - 3.150.000
@@ -55,7 +56,7 @@ func TestCalculateMarginView_UnrealizedLossScenario(t *testing.T) {
 		RealizedPnLIDR:    decimal.Zero,
 	}
 
-	view := CalculateMarginView(holding, nil)
+	view := service.CalculateMarginView(holding, nil)
 
 	expectedMarketValue := decimal.NewFromInt(5850000)   // 500 * 11.700
 	expectedUnrealizedPnL := decimal.NewFromInt(-150000) // -Rp 150.000
@@ -85,7 +86,7 @@ func TestCalculateMarginView_ZeroHolding(t *testing.T) {
 		RealizedPnLIDR:    decimal.NewFromInt(250000),
 	}
 
-	view := CalculateMarginView(holding, nil)
+	view := service.CalculateMarginView(holding, nil)
 
 	if !view.MarketValueIDR.IsZero() {
 		t.Fatalf("expected 0 market value, got %s", view.MarketValueIDR)
