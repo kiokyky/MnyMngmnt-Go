@@ -35,21 +35,27 @@ jobs:
       - name: Anti-Tamper Check (Protect tests, .github, and .githooks)
         if: github.actor != 'kiokyky'
         run: |
-          echo "🔒 Memeriksa apakah ada perubahan tidak sah pada folder tests/, .github/, atau .githooks/ oleh ${{ github.actor }}..."
+          echo "🔒 Memeriksa apakah ada commit dari selain kiokyky yang mengubah tests/, .github/, atau .githooks/..."
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+            RANGE="origin/${{ github.base_ref }}..HEAD"
           else
-            CHANGED_FILES=$(git diff --name-only HEAD~1...HEAD)
+            RANGE="HEAD~1..HEAD"
           fi
 
-          PROTECTED_CHANGES=$(echo "$CHANGED_FILES" | grep -E '^(tests/|\.github/|\.githooks/)' || true)
-          if [ -n "$PROTECTED_CHANGES" ]; then
-            echo "❌ PELANGGARAN: Anda (${{ github.actor }}) tidak diizinkan mengubah file di dalam tests/, .github/, atau .githooks/!"
-            echo "File yang terdeteksi diubah:"
-            echo "$PROTECTED_CHANGES"
-            exit 1
-          fi
-          echo "✅ Tidak ada perubahan pada folder yang dilindungi."
+          # Cari semua commit di dalam branch ini yang menyentuh folder terproteksi
+          COMMITS=$(git log --format="%H" $RANGE -- tests/ .github/ .githooks/)
+          for COMMIT in $COMMITS; do
+            AUTHOR_NAME=$(git show -s --format="%an" $COMMIT)
+            AUTHOR_EMAIL=$(git show -s --format="%ae" $COMMIT)
+            # Izinkan hanya jika commit tersebut dibuat oleh pemilik repo (kiokyky / Leviathanzs)
+            if ! echo "$AUTHOR_NAME $AUTHOR_EMAIL" | grep -Eqi "kiokyky|Leviathanzs"; then
+              echo "❌ PELANGGARAN pada commit $COMMIT oleh $AUTHOR_NAME ($AUTHOR_EMAIL):"
+              echo "Developer tidak diizinkan mengubah file di dalam tests/, .github/, atau .githooks/!"
+              git show --stat $COMMIT -- tests/ .github/ .githooks/
+              exit 1
+            fi
+          done
+          echo "✅ Seluruh file di dalam tests/, .github/, dan .githooks/ aman (hanya diubah oleh pemilik repo)."
 
       - name: Setup Go
         uses: actions/setup-go@v5
