@@ -1,0 +1,5 @@
+# Hanya pemilik repository (@kiokyky) yang berhak mengubah atau menyetujui perubahan
+# pada direktori pengujian (tests), git hooks, dan workflow CI/CD.
+/tests/       @kiokyky
+/.github/     @kiokyky
+/.githooks/   @kiokyky

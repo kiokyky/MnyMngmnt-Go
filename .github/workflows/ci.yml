@@ -29,6 +29,27 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Anti-Tamper Check (Protect tests, .github, and .githooks)
+        if: github.actor != 'kiokyky'
+        run: |
+          echo "🔒 Memeriksa apakah ada perubahan tidak sah pada folder tests/, .github/, atau .githooks/ oleh ${{ github.actor }}..."
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1...HEAD)
+          fi
+
+          PROTECTED_CHANGES=$(echo "$CHANGED_FILES" | grep -E '^(tests/|\.github/|\.githooks/)' || true)
+          if [ -n "$PROTECTED_CHANGES" ]; then
+            echo "❌ PELANGGARAN: Anda (${{ github.actor }}) tidak diizinkan mengubah file di dalam tests/, .github/, atau .githooks/!"
+            echo "File yang terdeteksi diubah:"
+            echo "$PROTECTED_CHANGES"
+            exit 1
+          fi
+          echo "✅ Tidak ada perubahan pada folder yang dilindungi."
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -51,4 +72,3 @@ jobs:
           DB_SSLMODE: disable
           JWT_SECRET: ci-test-secret
         run: go test -count=1 -v ./tests/...
-

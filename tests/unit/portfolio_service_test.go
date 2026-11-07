@@ -101,3 +101,4 @@ func TestCalculateMarginView_ZeroHolding(t *testing.T) {
 		t.Fatalf("expected TotalReturnIDR 250000 from realized PnL, got %s", view.TotalReturnIDR)
 	}
 }
+
